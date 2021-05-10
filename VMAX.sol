@@ -10,7 +10,7 @@ import "./libraries/SafeERC20.sol";
 
 import "./helpers/Ownable.sol";
 
-contract TMAX is ERC20("TestMax", "TMAX"), Ownable {
+contract VMAX is ERC20("VaultMax", "VMAX"), Ownable {
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
     }

@@ -76,14 +76,14 @@ contract VMAXFarm is Ownable, ReentrancyGuard {
         address strat; // Strategy address that will auto compound want tokens
     }
 
-    address public VMAX = 0xE8df031542aFB13EC44B34bE5aD491dC0F9Ec252;
+    address public VMAX = 0xc2e4D7341bf85e547528DcAF257A83E4207538A2;
 
     address public burnAddress = 0x000000000000000000000000000000000000dEaD;
 
 
     uint256 public VMAXMaxSupply = 100000000000000000000000000;
-    uint256 public VMAXPerBlock = 8598000000000000000; // VMAX tokens created per block
-    uint256 public startBlock = 7113235; //https://bscscan.com/block/countdown/3888888
+    uint256 public VMAXPerBlock = 9000000000000000000; // VMAX tokens created per block
+    uint256 public startBlock = 7415180; //https://bscscan.com/block/countdown/7415180
 
     PoolInfo[] public poolInfo; // Info of each pool.
     mapping(uint256 => mapping(address => UserInfo)) public userInfo; // Info of each user that stakes LP tokens.
