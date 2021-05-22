@@ -46,6 +46,10 @@ interface IStrategy {
     ) external;
 }
 
+interface IVMAX {
+  function transferTaxRate() external view returns (uint256);
+}
+
 contract VMAXFarm is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -76,14 +80,14 @@ contract VMAXFarm is Ownable, ReentrancyGuard {
         address strat; // Strategy address that will auto compound want tokens
     }
 
-    address public VMAX = 0xc2e4D7341bf85e547528DcAF257A83E4207538A2;
+    address public VMAX = 0x2125844E6160Bf07AF3065a2Fdd3B13880A76cB7;
 
     address public burnAddress = 0x000000000000000000000000000000000000dEaD;
 
 
     uint256 public VMAXMaxSupply = 100000000000000000000000000;
     uint256 public VMAXPerBlock = 9000000000000000000; // VMAX tokens created per block
-    uint256 public startBlock = 7415180; //https://bscscan.com/block/countdown/7415180
+    uint256 public startBlock = 8607822; //https://bscscan.com/block/countdown/7415180
 
     PoolInfo[] public poolInfo; // Info of each pool.
     mapping(uint256 => mapping(address => UserInfo)) public userInfo; // Info of each user that stakes LP tokens.
@@ -253,6 +257,11 @@ contract VMAXFarm is Ownable, ReentrancyGuard {
                 address(this),
                 _wantAmt
             );
+            //if want is VMAX, substract tax to transfer correct amount
+            if (address(pool.want) == address(VMAX)) {
+              uint256 transferTax = _wantAmt.mul(IVMAX(VMAX).transferTaxRate()).div(10000);
+              _wantAmt = _wantAmt.sub(transferTax);
+            }
 
             pool.want.safeIncreaseAllowance(pool.strat, _wantAmt);
             uint256 sharesAdded =

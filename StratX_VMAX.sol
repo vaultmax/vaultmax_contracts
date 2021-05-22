@@ -1574,6 +1574,10 @@ interface IPancakeRouter02 is IPancakeRouter01 {
     ) external;
 }
 
+interface IVMAX {
+  function transferTaxRate() external view returns (uint256);
+}
+
 // "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/ReentrancyGuard.sol";
 abstract contract ReentrancyGuard {
     // Booleans are more expensive than uint256 or any type that takes up a full
@@ -1817,6 +1821,11 @@ contract StratX is Ownable, ReentrancyGuard, Pausable {
             address(this),
             _wantAmt
         );
+
+        //substract VMAX tax to record correct shares
+          uint256 transferTax = _wantAmt.mul(IVMAX(VMAXAddress).transferTaxRate()).div(10000);
+          _wantAmt = _wantAmt.sub(transferTax);
+
 
         uint256 sharesAdded = _wantAmt;
         if (wantLockedTotal > 0) {
