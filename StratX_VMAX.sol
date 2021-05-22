@@ -1717,7 +1717,7 @@ contract StratX is Ownable, ReentrancyGuard, Pausable {
     address public uniRouterAddress; // uniswap, pancakeswap etc
 
     address public constant wbnbAddress =
-        0xb603cEa165119701B58D56d10D2060fBFB3efad8;
+        0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     address public vmaxFarmAddress;
     address public VMAXAddress;
     address public govAddress; // timelock contract
