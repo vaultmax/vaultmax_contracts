@@ -12,7 +12,7 @@ interface IPantherswapFarm {
         returns (uint256);
 
     // View function to see pending CAKEs on frontend.
-    function pendingCake(uint256 _pid, address _user)
+    function pendingPanther(uint256 _pid, address _user)
         external
         view
         returns (uint256);
@@ -22,12 +22,6 @@ interface IPantherswapFarm {
 
     // Withdraw LP tokens from MasterChef.
     function withdraw(uint256 _pid, uint256 _amount) external;
-
-    // Stake CAKE tokens to MasterChef
-    function enterStaking(uint256 _amount) external;
-
-    // Withdraw CAKE tokens from STAKING.
-    function leaveStaking(uint256 _amount) external;
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(uint256 _pid) external;
