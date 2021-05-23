@@ -60,6 +60,12 @@ interface IStrategy {
     function noTimeLockFunc3() external;
 }
 
+
+interface ILocker {
+
+    function unlock(address _token, address _recipient) external;
+}
+
 // import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/TimelockController.sol";
 /**
  * @dev Contract module which acts as a timelocked controller. When set as the
@@ -112,6 +118,16 @@ contract TimelockController is AccessControl, ReentrancyGuard {
         uint256 _pid,
         uint256 _allocPoint,
         bool _withUpdate,
+        bytes32 predecessor,
+        uint256 delay
+    );
+
+    event UnlockScheduled(
+        bytes32 indexed id,
+        uint256 indexed index,
+        address _VaultMaxLockerAddress,
+        address _token,
+        address _recipient,
         bytes32 predecessor,
         uint256 delay
     );
@@ -502,67 +518,126 @@ contract TimelockController is AccessControl, ReentrancyGuard {
     /**
      * @dev Reduced timelock functions
      */
-    function scheduleSet(
-        address _vmaxfarmAddress,
-        uint256 _pid,
-        uint256 _allocPoint,
-        bool _withUpdate,
-        bytes32 predecessor,
-        bytes32 salt
-    ) public onlyRole(EXECUTOR_ROLE) {
-        bytes32 id =
-            keccak256(
-                abi.encode(
-                    _vmaxfarmAddress,
-                    _pid,
-                    _allocPoint,
-                    _withUpdate,
-                    predecessor,
-                    salt
-                )
-            );
+     function scheduleSet(
+         address _vmaxfarmAddress,
+         uint256 _pid,
+         uint256 _allocPoint,
+         bool _withUpdate,
+         bytes32 predecessor,
+         bytes32 salt
+     ) public onlyRole(EXECUTOR_ROLE) {
+         bytes32 id =
+             keccak256(
+                 abi.encode(
+                     _vmaxfarmAddress,
+                     _pid,
+                     _allocPoint,
+                     _withUpdate,
+                     predecessor,
+                     salt
+                 )
+             );
 
-        require(
-            _timestamps[id] == 0,
-            "TimelockController: operation already scheduled"
-        );
+         require(
+             _timestamps[id] == 0,
+             "TimelockController: operation already scheduled"
+         );
 
-        _timestamps[id] = SafeMath.add(block.timestamp, minDelayReduced);
-        emit SetScheduled(
-            id,
-            0,
-            _pid,
-            _allocPoint,
-            _withUpdate,
-            predecessor,
-            minDelayReduced
-        );
-    }
+         _timestamps[id] = SafeMath.add(block.timestamp, minDelayReduced);
+         emit SetScheduled(
+             id,
+             0,
+             _pid,
+             _allocPoint,
+             _withUpdate,
+             predecessor,
+             minDelayReduced
+         );
+     }
 
-    function executeSet(
-        address _vmaxfarmAddress,
-        uint256 _pid,
-        uint256 _allocPoint,
-        bool _withUpdate,
-        bytes32 predecessor,
-        bytes32 salt
-    ) public payable virtual onlyRole(EXECUTOR_ROLE) nonReentrant {
-        bytes32 id =
-            keccak256(
-                abi.encode(
-                    _vmaxfarmAddress,
-                    _pid,
-                    _allocPoint,
-                    _withUpdate,
-                    predecessor,
-                    salt
-                )
-            );
+     function executeSet(
+         address _vmaxfarmAddress,
+         uint256 _pid,
+         uint256 _allocPoint,
+         bool _withUpdate,
+         bytes32 predecessor,
+         bytes32 salt
+     ) public payable virtual onlyRole(EXECUTOR_ROLE) nonReentrant {
+         bytes32 id =
+             keccak256(
+                 abi.encode(
+                     _vmaxfarmAddress,
+                     _pid,
+                     _allocPoint,
+                     _withUpdate,
+                     predecessor,
+                     salt
+                 )
+             );
 
-        _beforeCall(predecessor);
-        IVMAXFarm(_vmaxfarmAddress).set(_pid, _allocPoint, _withUpdate);
-        _afterCall(id);
-    }
+         _beforeCall(predecessor);
+         IVMAXFarm(_vmaxfarmAddress).set(_pid, _allocPoint, _withUpdate);
+         _afterCall(id);
+     }
+
+
+     function scheduleUnlock(
+         address _VaultMaxLockerAddress,
+         address _token,
+         address _recipient,
+         bytes32 predecessor,
+         bytes32 salt
+     ) public onlyRole(EXECUTOR_ROLE) {
+         bytes32 id =
+             keccak256(
+                 abi.encode(
+                     _VaultMaxLockerAddress,
+                     _token,
+                     _recipient,
+                     predecessor,
+                     salt
+                 )
+             );
+
+         require(
+             _timestamps[id] == 0,
+             "TimelockController: operation already scheduled"
+         );
+
+         _timestamps[id] = SafeMath.add(block.timestamp, minDelayReduced);
+         emit UnlockScheduled(
+             id,
+             0,
+             _VaultMaxLockerAddress,
+             _token,
+             _recipient,
+             predecessor,
+             minDelayReduced
+         );
+     }
+
+     function executeUnlock(
+       address _VaultMaxLockerAddress,
+       address _token,
+       address _recipient,
+       bytes32 predecessor,
+       bytes32 salt
+     ) public payable virtual onlyRole(EXECUTOR_ROLE) nonReentrant {
+         bytes32 id =
+             keccak256(
+                 abi.encode(
+                     _VaultMaxLockerAddress,
+                     _token,
+                     _recipient,
+                     predecessor,
+                     salt
+                 )
+             );
+
+         _beforeCall(predecessor);
+         ILocker(_VaultMaxLockerAddress).unlock(_token, _recipient);
+         _afterCall(id);
+     }
 
     /**
      * @dev No timelock functions
